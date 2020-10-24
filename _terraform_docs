@@ -1,0 +1,112 @@
+#compdef terraform-docs
+
+local -a terraform_docs_commands opts_args
+_terraform_docs_commands=(
+    'asciidoc:Generate AsciiDoc of inputs and outputs'
+    'completion:Generate shell completion code for the specified shell (bash or zsh)'
+    'json:Generate JSON of inputs and outputs'
+    'markdown:Generate Markdown of inputs and outputs'
+    'pretty:Generate colorized pretty of inputs and outputs'
+    'tfvars:Generate terraform.tfvars of inputs'
+    'toml:Generate TOML of inputs and outputs'
+    'version:Print the version number of terraform-docs'
+    'xml:Generate XML of inputs and outputs'
+    'yaml:Generate YAML of inputs and outputs'
+)
+
+__asciidoc() {
+    local -a __asciidoc_commands
+    __asciidoc_commands=(
+        'document:Generate AsciiDoc document of inputs and outputs'
+        'table:Generate AsciiDoc tables of inputs and outputs'
+    )
+    _describe -t asciidoc "asciidoc commands" __asciidoc_commands
+}
+
+__completion() {
+    local -a __completion_commands
+    __completion_commands=(
+        'bash:Generate shell completion for bash'
+        'zsh:Generate shel completion for zsh'
+    )
+    _describe -t completion "completion commands" __completion_commands
+}
+
+__markdown() {
+    local -a __markdown_commands
+    __markdown_commands=(
+        'document:Generate Markdown document of inputs and outputs'
+        'table:Generate Markdown tables of inputs and outputs'
+    )
+    _describe -t markdown "markdown commands" __markdown_commands
+}
+
+__tfvars() {
+    local -a __tfvars_commands
+    __tfvars_commands=(
+        'hcl:Generate HCL format of terraform.tfvars of inputs'
+        'json:Generate JSON format of terraform.tfvars of inputs'
+    )
+    _describe -t tfvars "tfvars commands" __tfvars_commands
+}
+
+_arguments \
+  '--config=[config file name (default ".terraform-docs.yml")]: :_files' \
+  '--header-from=[relative path of a file to read header from (default "main.tf")]: :' \
+  '--hide=[hide section]:toggle:(header inputs outputs providers requirements)' \
+  '--hide-all=[hide all sections (default false)]:toggle:(true false)' \
+  '--output-values=[inject output values into outputs (default false)]:toggle:(true false)' \
+  '--show=[show section]:toggle:(header inputs outputs providers requirements)' \
+  '--show-all=[show all sections (default true)]:toggle:(false true)' \
+  '--sort=[sort items (default true)]:toggle:(false true)' \
+  '--sort-by-required=[sort items by name and print required ones first (default false)]:toggle:(true false)' \
+  '--sort-by-type=[sort items by type of them (default false)]:toggle:(true false)' \
+  '*:: :->subcmds' && return 0
+
+if (( CURRENT == 1 )); then
+  _describe -t commands "terraform-docs command" _terraform_docs_commands
+  return
+fi
+
+local -a command_args
+case "$words[1]" in
+  asciidoc)
+    _arguments \
+        '--indent=[indention level of AsciiDoc sections (default 2)]:toggle:(1 2 3 4 5)' \
+        '--required=[show Required column or section (default true)]:toggle:(false true)' \
+        '--sensitive=[show Sensitive column or section (default true)]:toggle:(false true)' \
+        '*:: :->subcmds' && return 0
+    if [[ $CURRENT -lt 2 ]]; then
+        __asciidoc
+    else
+        _path_files -/
+    fi
+    ;;
+  completion)
+    test $CURRENT -lt 3 && __completion ;;
+  json)
+    _arguments \
+        '--escape=[escape special characters (default true)]:toggle:(false true)' \
+        '*:: :->subcmds' && return 0
+    _path_files -/ ;;
+  markdown)
+    _arguments \
+        '--escape=[escape special characters (default true)]:toggle:(false true)' \
+        '--indent=[indention level of AsciiDoc sections (default 2)]:toggle:(1 2 3 4 5)' \
+        '--required=[show Required column or section (default true)]:toggle:(false true)' \
+        '--sensitive=[show Sensitive column or section (default true)]:toggle:(false true)' \
+        '*:: :->subcmds' && return 0
+    if [[ $CURRENT -lt 2 ]]; then
+        __markdown
+    else
+        _path_files -/
+    fi
+    ;;
+  pretty)
+    _arguments \
+        '--color=[colorize printed result (default true)]:toggle:(false true)' \
+        '*:: :->subcmds' && return 0
+    _path_files -/ ;;
+  tfvars)
+    test $CURRENT -lt 3 && __tfvars ;;
+esac
